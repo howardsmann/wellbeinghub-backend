@@ -2,7 +2,8 @@ namespace WellbeingHub.Models
 {
     public class User
     {
-        public int Id { get; set; }
+        public string id { get; set; } = System.Guid.NewGuid().ToString(); // Cosmos-required string id
+        public int Id { get; set; }                                        // your numeric id (optional)
         public string Name { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
