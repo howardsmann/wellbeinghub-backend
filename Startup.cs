@@ -19,12 +19,14 @@ namespace WellbeingHub
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        public Startup(IConfiguration configuration, IWebHostEnvironment env)
         {
             Configuration = configuration;
+            Environment = env;
         }
 
         public IConfiguration Configuration { get; }
+        public IWebHostEnvironment Environment { get; }
 
         public void ConfigureServices(IServiceCollection services)
         {
@@ -36,13 +38,32 @@ namespace WellbeingHub
             services.AddTransient<IValidator<Controllers.GroupDto>, GroupDtoValidator>();
             services.AddTransient<IValidator<Controllers.MarketplaceItemDto>, MarketplaceItemDtoValidator>();
 
-            var cosmosEndpoint = Configuration["CosmosDb:Account"];
-            var credential = new DefaultAzureCredential();
-            var cosmosClient = new CosmosClient(cosmosEndpoint, credential);
+            services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAll", b => b.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
+            });
+
+            var cosmosEndpoint = Configuration["CosmosDb:Account"] ?? Configuration["CosmosDb__Account"];
+            var key = Configuration["CosmosDb:Key"] ?? Configuration["CosmosDb__Key"];
+
+            if (string.IsNullOrWhiteSpace(cosmosEndpoint))
+                throw new System.Exception("CosmosDb:Account not configured. Set CosmosDb__Account env var.");
+
+            CosmosClient cosmosClient;
+            if (!string.IsNullOrEmpty(key) && Environment.IsDevelopment())
+            {
+                cosmosClient = new CosmosClient(cosmosEndpoint, key);
+            }
+            else
+            {
+                var credential = new DefaultAzureCredential();
+                cosmosClient = new CosmosClient(cosmosEndpoint, credential);
+            }
+
             services.AddSingleton(cosmosClient);
             services.AddSingleton<DataStore>();
 
-            var key = Encoding.ASCII.GetBytes(Configuration["Jwt:Key"] ?? "ChangeThisDevOnlyKey");
+            var jwtKey = Encoding.ASCII.GetBytes(Configuration["Jwt:Key"] ?? Configuration["Jwt__Key"] ?? "ChangeThisDevOnlyKey");
             services.AddAuthentication(x =>
             {
                 x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -55,7 +76,7 @@ namespace WellbeingHub
                 x.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(key),
+                    IssuerSigningKey = new SymmetricSecurityKey(jwtKey),
                     ValidateIssuer = false,
                     ValidateAudience = false
                 };
@@ -98,6 +119,7 @@ namespace WellbeingHub
 
             app.UseRouting();
 
+            app.UseCors("AllowAll");
             app.UseAuthentication();
             app.UseAuthorization();
 

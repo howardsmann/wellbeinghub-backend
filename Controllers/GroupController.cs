@@ -41,6 +41,5 @@ namespace WellbeingHub.Controllers
         }
     }
 
-    // DTO for this controller
     public record GroupDto(string Name, string Location, List<int>? MemberIds);
 }

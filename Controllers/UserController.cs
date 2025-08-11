@@ -45,7 +45,7 @@ namespace WellbeingHub.Controllers
             if (user == null || user.Password != request.Password) return Unauthorized();
 
             var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes(_config["Jwt:Key"] ?? "ChangeThisDevOnlyKey");
+            var key = Encoding.ASCII.GetBytes(_config["Jwt:Key"] ?? _config["Jwt__Key"] ?? "ChangeThisDevOnlyKey");
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new[]
@@ -62,7 +62,6 @@ namespace WellbeingHub.Controllers
         }
     }
 
-    // DTOs for this controller
     public record LoginRequest(string Email, string Password);
     public record UserDto(string Name, string Email, string Password, string Role, string Location);
 }

@@ -42,6 +42,5 @@ namespace WellbeingHub.Controllers
         }
     }
 
-    // DTO for this controller
     public record MarketplaceItemDto(string Title, string Description, decimal Price, int CreatedBy);
 }
