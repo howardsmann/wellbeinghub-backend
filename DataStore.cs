@@ -27,7 +27,7 @@ namespace WellbeingHub
         }
 
         public async Task AddUserAsync(HubUser user) =>
-            await _userContainer.CreateItemAsync(user, new PartitionKey(user.Id.ToString()));
+            await _userContainer.CreateItemAsync(user, new PartitionKey(user.id.ToString()));
 
         public async Task<HubUser?> GetUserByEmailAsync(string email)
         {
@@ -44,7 +44,7 @@ namespace WellbeingHub
         }
 
         public async Task AddGroupAsync(HubGroup group) =>
-            await _groupContainer.CreateItemAsync(group, new PartitionKey(group.Id.ToString()));
+            await _groupContainer.CreateItemAsync(group, new PartitionKey(group.id.ToString()));
 
         public async Task<List<HubGroup>> GetGroupsByLocationAsync(string location)
         {
@@ -61,7 +61,7 @@ namespace WellbeingHub
         }
 
         public async Task AddMarketplaceItemAsync(HubItem item) =>
-            await _marketplaceContainer.CreateItemAsync(item, new PartitionKey(item.Id.ToString()));
+            await _marketplaceContainer.CreateItemAsync(item, new PartitionKey(item.id.ToString()));
 
         public async Task<List<HubItem>> GetAllMarketplaceItemsAsync()
         {
