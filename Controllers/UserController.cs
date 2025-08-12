@@ -35,7 +35,7 @@ namespace WellbeingHub.Controllers
                 Location = userDto.Location
             };
 
-            // ✅ Ensure Cosmos partition key uses the same value
+            // ✅ Make Cosmos PK value (id) match our numeric Id
             user.id = user.Id.ToString();
 
             await _store.AddUserAsync(user);
