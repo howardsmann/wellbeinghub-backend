@@ -4,9 +4,9 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Cosmos;
 
 // Alias our models to avoid conflicts with Microsoft.Azure.Cosmos.User
-using HubUser = WellbeingHub.Models.User;
+using HubUser  = WellbeingHub.Models.User;
 using HubGroup = WellbeingHub.Models.Group;
-using HubItem = WellbeingHub.Models.MarketplaceItem;
+using HubItem  = WellbeingHub.Models.MarketplaceItem;
 
 namespace WellbeingHub
 {
@@ -20,57 +20,66 @@ namespace WellbeingHub
         public DataStore(CosmosClient client)
         {
             _client = client;
+
+            // Fresh DB name to avoid any containers previously created with the wrong PK
             var database = _client.CreateDatabaseIfNotExistsAsync("WellbeingHubDb2").Result;
-            _userContainer = database.Database.CreateContainerIfNotExistsAsync("Users", "/id").Result;
-            _groupContainer = database.Database.CreateContainerIfNotExistsAsync("Groups", "/id").Result;
-            _marketplaceContainer = database.Database.CreateContainerIfNotExistsAsync("MarketplaceItems", "/id").Result;
+
+            // All containers use lowercase /id as the partition key path
+            _userContainer         = database.Database.CreateContainerIfNotExistsAsync("Users",            "/id").Result;
+            _groupContainer        = database.Database.CreateContainerIfNotExistsAsync("Groups",           "/id").Result;
+            _marketplaceContainer  = database.Database.CreateContainerIfNotExistsAsync("MarketplaceItems", "/id").Result;
         }
 
+        // ---------- Users ----------
         public async Task AddUserAsync(HubUser user) =>
-            await _userContainer.CreateItemAsync(user, new PartitionKey(user.id.ToString()));
+            await _userContainer.CreateItemAsync(user, new PartitionKey(user.id));
 
         public async Task<HubUser?> GetUserByEmailAsync(string email)
         {
-            var query = new QueryDefinition("SELECT * FROM c WHERE c.Email = @email")
+            var q = new QueryDefinition("SELECT * FROM c WHERE c.Email = @email")
                 .WithParameter("@email", email);
-            var iterator = _userContainer.GetItemQueryIterator<HubUser>(query);
-            while (iterator.HasMoreResults)
+
+            var it = _userContainer.GetItemQueryIterator<HubUser>(q);
+            while (it.HasMoreResults)
             {
-                var results = await iterator.ReadNextAsync();
-                var match = results.FirstOrDefault();
+                var page = await it.ReadNextAsync();
+                var match = page.FirstOrDefault();
                 if (match != null) return match;
             }
             return null;
         }
 
+        // ---------- Groups ----------
         public async Task AddGroupAsync(HubGroup group) =>
-            await _groupContainer.CreateItemAsync(group, new PartitionKey(group.id.ToString()));
+            await _groupContainer.CreateItemAsync(group, new PartitionKey(group.id));
 
         public async Task<List<HubGroup>> GetGroupsByLocationAsync(string location)
         {
-            var query = new QueryDefinition("SELECT * FROM c WHERE c.Location = @location")
+            var q = new QueryDefinition("SELECT * FROM c WHERE c.Location = @location")
                 .WithParameter("@location", location);
-            var iterator = _groupContainer.GetItemQueryIterator<HubGroup>(query);
+
+            var it = _groupContainer.GetItemQueryIterator<HubGroup>(q);
             var output = new List<HubGroup>();
-            while (iterator.HasMoreResults)
+            while (it.HasMoreResults)
             {
-                var page = await iterator.ReadNextAsync();
+                var page = await it.ReadNextAsync();
                 output.AddRange(page);
             }
             return output;
         }
 
+        // ---------- Marketplace ----------
         public async Task AddMarketplaceItemAsync(HubItem item) =>
-            await _marketplaceContainer.CreateItemAsync(item, new PartitionKey(item.id.ToString()));
+            await _marketplaceContainer.CreateItemAsync(item, new PartitionKey(item.id));
 
         public async Task<List<HubItem>> GetAllMarketplaceItemsAsync()
         {
-            var query = new QueryDefinition("SELECT * FROM c");
-            var iterator = _marketplaceContainer.GetItemQueryIterator<HubItem>(query);
+            var q = new QueryDefinition("SELECT * FROM c");
+            var it = _marketplaceContainer.GetItemQueryIterator<HubItem>(q);
             var output = new List<HubItem>();
-            while (iterator.HasMoreResults)
+            while (it.HasMoreResults)
             {
-                var page = await iterator.ReadNextAsync();
+                var page = await it.ReadNextAsync();
                 output.AddRange(page);
             }
             return output;
