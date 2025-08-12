@@ -29,6 +29,10 @@ namespace WellbeingHub.Controllers
                 Price = itemDto.Price,
                 CreatedBy = itemDto.CreatedBy
             };
+
+            // ✅ Ensure Cosmos partition key value matches lowercase `id` property
+            item.id = item.Id.ToString();
+
             await _store.AddMarketplaceItemAsync(item);
             return Ok(item);
         }
