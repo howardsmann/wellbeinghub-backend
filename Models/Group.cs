@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using System.Text.Json.Serialization;   // <-- add
+using System.Text.Json.Serialization;
 
 namespace WellbeingHub.Models
 {
@@ -7,7 +7,7 @@ namespace WellbeingHub.Models
     {
         public string id { get; set; } = System.Guid.NewGuid().ToString();
 
-        [JsonPropertyName("Id")]        // <-- add
+        [JsonPropertyName("numericId")]
         public int Id { get; set; }
 
         public string Name { get; set; } = string.Empty;
