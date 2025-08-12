@@ -20,7 +20,7 @@ namespace WellbeingHub
         public DataStore(CosmosClient client)
         {
             _client = client;
-            var database = _client.CreateDatabaseIfNotExistsAsync("WellbeingHubDb").Result;
+            var database = _client.CreateDatabaseIfNotExistsAsync("WellbeingHubDb2").Result;
             _userContainer = database.Database.CreateContainerIfNotExistsAsync("Users", "/id").Result;
             _groupContainer = database.Database.CreateContainerIfNotExistsAsync("Groups", "/id").Result;
             _marketplaceContainer = database.Database.CreateContainerIfNotExistsAsync("MarketplaceItems", "/id").Result;
