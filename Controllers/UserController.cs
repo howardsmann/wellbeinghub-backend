@@ -34,6 +34,10 @@ namespace WellbeingHub.Controllers
                 Role = userDto.Role,
                 Location = userDto.Location
             };
+
+            // ✅ Ensure Cosmos partition key uses the same value
+            user.id = user.Id.ToString();
+
             await _store.AddUserAsync(user);
             return Ok(user);
         }
