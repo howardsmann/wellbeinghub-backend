@@ -1,4 +1,4 @@
-using System.Text.Json.Serialization;   // <-- add this
+using System.Text.Json.Serialization;
 
 namespace WellbeingHub.Models
 {
@@ -6,7 +6,7 @@ namespace WellbeingHub.Models
     {
         public string id { get; set; } = System.Guid.NewGuid().ToString();
 
-        [JsonPropertyName("Id")]        // <-- keeps the JSON name as "Id" (not camel-cased to "id")
+        [JsonPropertyName("numericId")]   // <-- rename to avoid clash with "id"
         public int Id { get; set; }
 
         public string Name { get; set; } = string.Empty;
