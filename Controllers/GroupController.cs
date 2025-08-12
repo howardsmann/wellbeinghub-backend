@@ -28,6 +28,10 @@ namespace WellbeingHub.Controllers
                 Location = groupDto.Location,
                 MemberIds = groupDto.MemberIds ?? new List<int>()
             };
+
+            // ✅ Ensure Cosmos partition key value matches the lowercase `id` field
+            group.id = group.Id.ToString();
+
             await _store.AddGroupAsync(group);
             return Ok(group);
         }
